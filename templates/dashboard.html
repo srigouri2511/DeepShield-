@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeepShield | Security Review Workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/dashboard.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <section class="control-panel card">
+      <div class="control-copy">
+        <h1 class="workspace-title">DeepShield</h1>
+      </div>
+      <div class="status-store hidden">
+        <div class="status-chip" id="status-mode">Loading status</div>
+        <div class="status-meta mono" id="status-model">Checking AI configuration</div>
+        <div class="banner compact-banner" id="status-banner">Loading environment status...</div>
+        <div class="inline-stats mono">
+          <span class="inline-stat">mode: <strong id="hero-mode">Heuristic</strong></span>
+          <span class="inline-stat">model: <strong id="hero-model">Not configured</strong></span>
+          <span class="inline-stat">history: <strong id="history-count">0</strong></span>
+        </div>
+        <label class="toggle-card">
+          <span class="toggle-copy">
+            <span class="toggle-title">AI Copilot</span>
+            <span class="toggle-subtitle mono" id="ai-hint">Set OPENAI_API_KEY and restart the server to enable it.</span>
+          </span>
+          <span class="toggle-shell">
+            <input type="checkbox" id="ai-toggle" />
+            <span class="toggle-slider"></span>
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <main class="workspace">
+      <section class="analysis-card card">
+        <div class="analysis-head">
+          <div>
+            <p class="eyebrow">Review tools</p>
+            <h3>Pick a task and run it</h3>
+          </div>
+          <p class="analysis-note mono">Every result includes confidence, evidence, actions, and raw response data.</p>
+        </div>
+
+        <nav class="tabs-row">
+          <button class="tab-button active" data-tab="url" onclick="showTab('url', event)">URL</button>
+          <button class="tab-button" data-tab="email" onclick="showTab('email', event)">Email</button>
+          <button class="tab-button" data-tab="image" onclick="showTab('image', event)">Image</button>
+          <button class="tab-button" data-tab="headers" onclick="showTab('headers', event)">Headers</button>
+          <button class="tab-button" data-tab="verify" onclick="showTab('verify', event)">Identity</button>
+          <button class="tab-button" data-tab="history" onclick="showTab('history', event)">History</button>
+        </nav>
+
+        <section id="tab-url" class="tab active">
+          <div class="tab-header">
+            <div>
+              <h3>URL reputation review</h3>
+              <p>Check suspicious links and surface the strongest risk signals quickly.</p>
+            </div>
+          </div>
+          <div class="analysis-layout">
+            <div class="form-card">
+              <label class="field-label" for="url-input">Target URL</label>
+              <input id="url-input" type="text" placeholder="https://example.com/login" />
+              <div class="sample-row">
+                <button class="sample-button" type="button" onclick="fillField('url-input', 'http://paypal-secure.tk/verify@user')">Risky example</button>
+                <button class="sample-button" type="button" onclick="fillField('url-input', 'https://docs.python.org/3/library/re.html')">Clean example</button>
+              </div>
+              <button class="primary-button" onclick="detectURL()">Analyze URL</button>
+            </div>
+            <div id="url-result" class="result-panel hidden"></div>
+          </div>
+        </section>
+
+        <section id="tab-email" class="tab">
+          <div class="tab-header">
+            <div>
+              <h3>Email content triage</h3>
+              <p>Review urgency cues, suspicious wording, and takeover-style language.</p>
+            </div>
+          </div>
+          <div class="analysis-layout">
+            <div class="form-card">
+              <label class="field-label" for="email-input">Email body</label>
+              <textarea id="email-input" rows="8" placeholder="Paste the email body here"></textarea>
+              <div class="sample-row">
+                <button class="sample-button" type="button" onclick="fillField('email-input', 'Urgent: verify your account now and click here to avoid suspension.')">Risky example</button>
+                <button class="sample-button" type="button" onclick="fillField('email-input', 'Hi team, the weekly report is attached for your review.')">Clean example</button>
+              </div>
+              <button class="primary-button" onclick="detectEmail()">Analyze Email</button>
+            </div>
+            <div id="email-result" class="result-panel hidden"></div>
+          </div>
+        </section>
+
+        <section id="tab-image" class="tab">
+          <div class="tab-header">
+            <div>
+              <h3>Deepfake image review</h3>
+              <p>Score a stored image path and present the result in a cleaner investigation view.</p>
+            </div>
+          </div>
+          <div class="analysis-layout">
+            <div class="form-card">
+              <label class="field-label" for="image-path">Server-side image path</label>
+              <input id="image-path" type="text" placeholder="samples/deepfake_sample.png" />
+              <div class="sample-row">
+                <button class="sample-button" type="button" onclick="fillField('image-path', 'samples/real_sample.png')">Real sample</button>
+                <button class="sample-button" type="button" onclick="fillField('image-path', 'samples/deepfake_sample.png')">Deepfake sample</button>
+              </div>
+              <button class="primary-button" onclick="detectImage()">Analyze Image</button>
+            </div>
+            <div id="image-result" class="result-panel hidden"></div>
+          </div>
+        </section>
+
+        <section id="tab-headers" class="tab">
+          <div class="tab-header">
+            <div>
+              <h3>Email header analysis</h3>
+              <p>Inspect mail authentication failures and spoofing indicators without extra visual clutter.</p>
+            </div>
+          </div>
+          <div class="analysis-layout">
+            <div class="form-card">
+              <label class="field-label" for="headers-input">Raw email headers</label>
+              <textarea id="headers-input" rows="10" placeholder="Paste raw SMTP headers here"></textarea>
+              <div class="sample-row">
+                <button class="sample-button" type="button" onclick="fillField('headers-input', 'From: security@bank.com&#10;Reply-To: alert@bank-security.net&#10;DKIM=fail SPF=fail DMARC=fail')">Risky example</button>
+                <button class="sample-button" type="button" onclick="fillField('headers-input', 'From: support@paypal.com&#10;Reply-To: support@paypal.com&#10;DKIM=pass SPF=pass DMARC=pass')">Clean example</button>
+              </div>
+              <button class="primary-button" onclick="analyzeHeaders()">Analyze Headers</button>
+            </div>
+            <div id="headers-result" class="result-panel hidden"></div>
+          </div>
+        </section>
+
+        <section id="tab-verify" class="tab">
+          <div class="tab-header">
+            <div>
+              <h3>Identity verification</h3>
+              <p>Compare two face images and attach optional notes for a fuller case review.</p>
+            </div>
+          </div>
+          <div class="analysis-layout">
+            <div class="form-card">
+              <div class="file-grid">
+                <div class="file-group">
+                  <label class="field-label" for="img-a">Face image A</label>
+                  <input type="file" id="img-a" accept="image/*" />
+                </div>
+                <div class="file-group">
+                  <label class="field-label" for="img-b">Face image B</label>
+                  <input type="file" id="img-b" accept="image/*" />
+                </div>
+              </div>
+              <label class="field-label" for="verify-context">Optional case notes</label>
+              <textarea id="verify-context" rows="5" placeholder="Example: customer submitted a selfie for account recovery"></textarea>
+              <button class="primary-button" onclick="verifyIdentity()">Compare Faces</button>
+            </div>
+            <div id="verify-result" class="result-panel hidden"></div>
+          </div>
+        </section>
+
+        <section id="tab-history" class="tab">
+          <div class="tab-header">
+            <div>
+              <h3>Session history</h3>
+              <p>Keep a readable trail of what was reviewed, how it was analyzed, and what came back.</p>
+            </div>
+            <button class="secondary-button" onclick="clearHistory()">Clear history</button>
+          </div>
+          <div id="history-list" class="history-list"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

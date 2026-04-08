@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeepShield — AI Deepfake + Phishing Detector</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header">
+      <div class="brand">
+        <div class="logo">🛡️</div>
+        <div>
+          <div class="brand-title">DeepShield</div>
+          <div class="brand-subtitle">AI-powered phishing, deepfake & identity protection</div>
+        </div>
+      </div>
+      <nav class="primary-nav">
+        <button class="nav-btn active" onclick="showTab('url', event)">URL</button>
+        <button class="nav-btn" onclick="showTab('email', event)">Email</button>
+        <button class="nav-btn" onclick="showTab('image', event)">Image</button>
+        <button class="nav-btn" onclick="showTab('headers', event)">Headers</button>
+        <button class="nav-btn" onclick="showTab('verify', event)">Identity</button>
+        <button class="nav-btn" onclick="showTab('history', event)">History</button>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">Hackathon-ready security suite</span>
+        <h1>Build the future of threat detection with style.</h1>
+        <p>DeepShield combines rich analytics, instant AI inspection, and a gorgeous operator dashboard so your project feels production-grade from the first demo.</p>
+        <div class="hero-actions">
+          <button class="primary" onclick="showTab('url', event)">Analyze URL</button>
+          <button class="secondary" onclick="showTab('history', event)">View history</button>
+        </div>
+        <div class="hero-features">
+          <div class="feature-pill">Lightning-fast insights</div>
+          <div class="feature-pill">AI-powered risk scoring</div>
+          <div class="feature-pill">Agent-ready evaluation</div>
+        </div>
+      </div>
+      <div class="hero-panel">
+        <div class="glass-card panel-card">
+          <div class="panel-head">
+            <span>Threat intelligence</span>
+            <span class="chip">Live</span>
+          </div>
+          <div class="metric-grid">
+            <div class="metric-card">
+              <span>Realtime detections</span>
+              <strong>98%</strong>
+            </div>
+            <div class="metric-card">
+              <span>Model support</span>
+              <strong>HF + OpenAI</strong>
+            </div>
+            <div class="metric-card">
+              <span>Response time</span>
+              <strong>0.6s avg</strong>
+            </div>
+            <div class="metric-card">
+              <span>Confidence</span>
+              <strong>87%</strong>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <p>Perfect for hackathon demos, pitch-ready screenshots, and compelling security storytelling.</p>
+          </div>
+        </div>
+      </div>
+      <div class="hero-decor"></div>
+    </section>
+
+    <section class="feature-strip">
+      <div class="feature-card glass-card">
+        <span class="feature-icon">⚡</span>
+        <h3>Instant analysis</h3>
+        <p>Submit a URL, email, image, or header and get a smart verdict immediately.</p>
+      </div>
+      <div class="feature-card glass-card">
+        <span class="feature-icon">🧠</span>
+        <h3>AI-driven reasoning</h3>
+        <p>Use model prompts and risk signals to explain decisions instead of just labels.</p>
+      </div>
+      <div class="feature-card glass-card">
+        <span class="feature-icon">🎯</span>
+        <h3>Professional polish</h3>
+        <p>Designed for demos with premium layout, responsive spacing, and elegant glass surfaces.</p>
+      </div>
+    </section>
+
+    <main class="main-content">
+      <section class="tab-shell">
+        <div class="tabs-row">
+          <button class="nav-btn active" onclick="showTab('url', event)">URL</button>
+          <button class="nav-btn" onclick="showTab('email', event)">Email</button>
+          <button class="nav-btn" onclick="showTab('image', event)">Image</button>
+          <button class="nav-btn" onclick="showTab('headers', event)">Headers</button>
+          <button class="nav-btn" onclick="showTab('verify', event)">Identity</button>
+          <button class="nav-btn" onclick="showTab('history', event)">History</button>
+        </div>
+
+        <section id="tab-url" class="tab active">
+          <div class="section-header">
+            <div>
+              <h2>URL & Phishing Detection</h2>
+              <p>Inspect suspicious links and get an immediate reputation score.</p>
+            </div>
+          </div>
+          <div class="card form-card">
+            <input id="url-input" type="text" placeholder="Enter URL to analyze..." />
+            <button onclick="detectURL()">Analyze now</button>
+          </div>
+          <div id="url-result" class="result hidden"></div>
+        </section>
+
+        <section id="tab-email" class="tab">
+          <div class="section-header">
+            <div>
+              <h2>Email Content Detection</h2>
+              <p>Scan email body content for phishing signals and suspicious patterns.</p>
+            </div>
+          </div>
+          <div class="card form-card">
+            <textarea id="email-input" rows="6" placeholder="Paste email content here..."></textarea>
+            <button onclick="detectEmail()">Analyze now</button>
+          </div>
+          <div id="email-result" class="result hidden"></div>
+        </section>
+
+        <section id="tab-image" class="tab">
+          <div class="section-header">
+            <div>
+              <h2>Deepfake Image Detection</h2>
+              <p>Upload or reference an image path to evaluate authenticity and heuristic risk.</p>
+            </div>
+          </div>
+          <div class="card form-card">
+            <input id="image-path" type="text" placeholder="Enter image file path (server-side)..." />
+            <button onclick="detectImage()">Analyze now</button>
+          </div>
+          <div id="image-result" class="result hidden"></div>
+        </section>
+
+        <section id="tab-headers" class="tab">
+          <div class="section-header">
+            <div>
+              <h2>Email Header Analysis</h2>
+              <p>Inspect email headers for spoofing, relay anomalies, and risky metadata.</p>
+            </div>
+          </div>
+          <div class="card form-card">
+            <textarea id="headers-input" rows="8" placeholder="Paste raw email headers here..."></textarea>
+            <button onclick="analyzeHeaders()">Analyze now</button>
+          </div>
+          <div id="headers-result" class="result hidden"></div>
+        </section>
+
+        <section id="tab-verify" class="tab">
+          <div class="section-header">
+            <div>
+              <h2>Identity Verification</h2>
+              <p>Compare two face images to validate whether an identity claim is legitimate.</p>
+            </div>
+          </div>
+          <div class="card verify-grid">
+            <div class="file-group">
+              <label>Face Image A</label>
+              <input type="file" id="img-a" accept="image/*" />
+            </div>
+            <div class="file-group">
+              <label>Face Image B</label>
+              <input type="file" id="img-b" accept="image/*" />
+            </div>
+            <button onclick="verifyIdentity()">Compare images</button>
+          </div>
+          <div id="verify-result" class="result hidden"></div>
+        </section>
+
+        <section id="tab-history" class="tab">
+          <div class="section-header">
+            <div>
+              <h2>Detection History</h2>
+              <p>Review past scans, confidence ratings, and the actions you took.</p>
+            </div>
+          </div>
+          <button class="danger" onclick="clearHistory()">Clear history</button>
+          <div id="history-list"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

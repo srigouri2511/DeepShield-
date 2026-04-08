@@ -1,0 +1,103 @@
+name: deepfake-phishing-detection
+version: "2.0"
+tags:
+  - openenv
+  - security
+  - deepfake
+  - phishing
+  - identity-verification
+
+description: >
+  Real-world AI security environment combining phishing email/URL triage,
+  deepfake image detection, and identity fraud verification.
+  Fully OpenEnv-compliant with typed Pydantic models and step/reset/state interface.
+
+environment:
+  class: env.environment.DeepfakePhishingEnv
+  interface:
+    reset: "reset(task: TaskName = phishing_triage) -> Observation"
+    step: "step(action: Action) -> (Observation, Reward, bool, dict)"
+    state: "state() -> dict"
+    close: "close() -> None"
+
+observation:
+  type: Observation
+  fields:
+    task: TaskName
+    step: int
+    content: str
+    metadata: dict
+    done: bool
+
+action:
+  type: Action
+  fields:
+    task: TaskName
+    decision: str
+    confidence: float  # 0.0 - 1.0
+    reasoning: str
+
+reward:
+  type: Reward
+  fields:
+    value: float  # 0.0 - 1.0
+    correct: bool
+    feedback: str
+
+tasks:
+  - name: phishing_triage
+    difficulty: easy
+    description: >
+      Classify email samples as phishing or legitimate.
+      Rewards accuracy and confidence calibration on realistic analyst text.
+    valid_decisions: [phishing, legitimate]
+    grader: env.graders.grade_episode
+
+  - name: url_reputation
+    difficulty: easy
+    description: >
+      Analyze URL reputation and classify links as suspicious or clean.
+      Uses heuristics for shorteners, free domains, and phishing-style payloads.
+    valid_decisions: [suspicious, clean]
+    grader: env.graders.grade_episode
+
+  - name: email_header_analysis
+    difficulty: medium
+    description: >
+      Inspect raw email headers for SPF/DKIM/DMARC failures and spoofing signals.
+      Rewards correct interpretation of header anomalies.
+    valid_decisions: [suspicious, clean]
+    grader: env.graders.grade_episode
+
+  - name: deepfake_detection
+    difficulty: medium
+    description: >
+      Analyze image file paths and classify as deepfake or real
+      using Laplacian variance heuristic + agent reasoning.
+    valid_decisions: [deepfake, real]
+    grader: env.graders.grade_episode
+
+  - name: identity_fraud
+    difficulty: hard
+    description: >
+      Cross-modal fraud detection combining face similarity comparison
+      and email context analysis to detect identity fraud.
+    valid_decisions: [fraud, legitimate]
+    grader: env.graders.grade_episode
+
+inference:
+  entrypoint: inference.py
+  api_base_env_var: API_BASE_URL
+  model_env_var: MODEL_NAME
+  token_env_var: HF_TOKEN
+  baseline_scores:
+    phishing_triage: 0.9750
+    url_reputation: 0.9825
+    email_header_analysis: 0.9876
+    deepfake_detection: 0.9996
+    identity_fraud: 0.9185
+
+deployment:
+  platform: huggingface-spaces
+  dockerfile: Dockerfile
+  port: 7860

@@ -1,0 +1,6 @@
+[
+  { "type": "url", "input": "http://bit.ly/free-prize", "ground_truth": true },
+  { "type": "url", "input": "https://www.google.com" },
+  { "type": "email", "input": "urgent! verify your account now or it will be suspended. click here to confirm password." },
+  { "type": "email", "input": "Hi, your order has been shipped and will arrive in 3 days." }
+]

@@ -1,0 +1,12 @@
+.env
+.env.local
+.venv/
+.venv_local/
+.tmp/
+.test-artifacts/
+uploads/
+history.json
+__pycache__/
+*.pyc
+api.stdout.log
+api.stderr.log
