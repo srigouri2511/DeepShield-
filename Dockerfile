@@ -14,4 +14,4 @@ EXPOSE 7860
 
 ENV PORT=7860
 
-CMD ["python", "api.py"]
+CMD ["python", "server/app.py"]
