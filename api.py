@@ -4,7 +4,9 @@ import json
 import os
 from pathlib import Path
 from uuid import uuid4
+from enum import Enum
 from werkzeug.utils import secure_filename
+from pydantic import BaseModel, ValidationError
 from local_env import load_local_env
 from ai_assistant import AISecurityAnalyst
 from env.environment import DeepfakePhishingEnv
@@ -36,6 +38,12 @@ TASK_ALIASES = {
     "deepfake_detection": TaskName.DEEPFAKE_DETECTION,
     "identity": TaskName.IDENTITY_FRAUD,
     "identity_fraud": TaskName.IDENTITY_FRAUD,
+}
+
+DIFFICULTY_DEFAULTS = {
+    "easy": TaskName.PHISHING_TRIAGE,
+    "medium": TaskName.EMAIL_HEADER_ANALYSIS,
+    "hard": TaskName.IDENTITY_FRAUD,
 }
 
 POSITIVE_LABELS = {
@@ -121,6 +129,7 @@ RECOMMENDED_ACTIONS = {
 }
 
 AI_ENGINE = AISecurityAnalyst()
+OPENENV_ENV = DeepfakePhishingEnv()
 
 
 def load_history():
@@ -149,6 +158,18 @@ def parse_payload() -> dict:
     return request.get_json(silent=True) or {}
 
 
+def json_ready(value):
+    if isinstance(value, BaseModel):
+        return value.model_dump(mode="json")
+    if isinstance(value, Enum):
+        return value.value
+    if isinstance(value, dict):
+        return {str(key): json_ready(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [json_ready(item) for item in value]
+    return value
+
+
 def parse_bool(value, default: bool = True) -> bool:
     if value is None:
         return default
@@ -164,6 +185,24 @@ def parse_bool(value, default: bool = True) -> bool:
 
 def resolve_task(payload: dict) -> TaskName:
     raw_task = str(payload.get("task") or payload.get("type") or "phishing_triage").strip().lower()
+    task = TASK_ALIASES.get(raw_task)
+    if task is None:
+        raise ValueError(raw_task)
+    return task
+
+
+def resolve_openenv_task(payload: dict | None = None) -> TaskName:
+    payload = payload or {}
+    raw_task = (
+        request.args.get("task")
+        or payload.get("task")
+        or request.args.get("difficulty")
+        or payload.get("difficulty")
+        or "phishing_triage"
+    )
+    raw_task = str(raw_task).strip().lower()
+    if raw_task in DIFFICULTY_DEFAULTS:
+        return DIFFICULTY_DEFAULTS[raw_task]
     task = TASK_ALIASES.get(raw_task)
     if task is None:
         raise ValueError(raw_task)
@@ -343,6 +382,62 @@ def build_heuristic_action(task: TaskName, obs) -> Action:
         confidence=clamp_score(result["confidence"]),
         reasoning="heuristic",
     )
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    state = OPENENV_ENV.state()
+    return jsonify({
+        "status": "ok",
+        "name": "deepfake-phishing-detection",
+        "active_task": json_ready(state["active_task"]),
+        "steps": state["steps"],
+        "openenv": True,
+    })
+
+
+@app.route("/reset", methods=["POST"])
+def openenv_reset():
+    payload = parse_payload()
+    try:
+        task = resolve_openenv_task(payload)
+    except ValueError as exc:
+        return jsonify({"error": f"Unknown task or difficulty: {exc}"}), 400
+
+    observation = OPENENV_ENV.reset(task)
+    return jsonify({
+        "observation": json_ready(observation),
+        "info": {"task": task.value},
+    })
+
+
+@app.route("/step", methods=["POST"])
+def openenv_step():
+    payload = parse_payload()
+    action_payload = payload.get("action", payload)
+    try:
+        action = Action.model_validate(action_payload)
+    except ValidationError as exc:
+        return jsonify({"error": "Invalid action payload", "details": exc.errors()}), 400
+
+    try:
+        observation, reward, done, info = OPENENV_ENV.step(action)
+    except RuntimeError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except FileNotFoundError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    return jsonify({
+        "observation": json_ready(observation),
+        "reward": json_ready(reward),
+        "done": bool(done),
+        "info": json_ready(info),
+    })
+
+
+@app.route("/state", methods=["GET"])
+def openenv_state():
+    return jsonify({"state": json_ready(OPENENV_ENV.state())})
 
 
 @app.route("/")

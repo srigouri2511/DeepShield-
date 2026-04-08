@@ -45,12 +45,18 @@ class _DummyClient:
 class InferenceTests(unittest.TestCase):
     def test_create_client_requires_hf_token(self):
         original = inference.HF_TOKEN
+        original_env = inference.os.environ.get("HF_TOKEN")
         inference.HF_TOKEN = None
         try:
+            inference.os.environ.pop("HF_TOKEN", None)
             with self.assertRaises(ValueError):
                 inference.create_client()
         finally:
             inference.HF_TOKEN = original
+            if original_env is None:
+                inference.os.environ.pop("HF_TOKEN", None)
+            else:
+                inference.os.environ["HF_TOKEN"] = original_env
 
     def test_resolve_client_type_prefers_hybrid_mapping(self):
         clients = {"hf": _DummyClient(), "openai": _DummyClient()}
