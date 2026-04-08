@@ -1,4 +1,14 @@
-﻿# DeepShield: OpenEnv Security Benchmark
+---
+title: DeepShield
+emoji: "🛡️"
+colorFrom: blue
+colorTo: red
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
+# DeepShield: OpenEnv Security Benchmark
 
 DeepShield is a real-world OpenEnv environment for security analysis tasks that humans actually perform:
 
